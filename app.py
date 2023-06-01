@@ -35,7 +35,29 @@ class_labels = [
     'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
     'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
     'toothbrush'
-]    
+]
+
+def detectVehicleNCount(image):
+    # Perform object detection on the image
+    results = model(image)
+
+    # Get the indices of all vehicle detections
+    vehicle_indices = np.isin(results.pred[0][:, -1].detach().cpu().numpy(), [1, 2, 3, 4, 5, 6, 7])
+
+    # Filter out the vehicle detections
+    vehicle_results = results.pred[0][vehicle_indices]
+
+    # Map class_index with labels, and fill vehicle_counts
+    for vehicle in vehicle_results:
+        class_index = int(vehicle[-1].detach().cpu().numpy())
+        label = class_labels[class_index]
+        vehicle_counts[label] += 1
+
+    response = {
+        'data': vehicle_counts
+    }
+
+    return response
 
 
 class VehicleCount(Resource):
@@ -63,26 +85,7 @@ class VehicleCount(Resource):
             }
             return response_obj, 415
 
-        # Perform object detection on the image
-        results = model(image)
-
-        # Get the indices of all vehicle detections
-        vehicle_indices = np.isin(results.pred[0][:, -1].detach().cpu().numpy(), [1, 2, 3, 4, 5, 6, 7])
-
-        # Filter out the vehicle detections
-        vehicle_results = results.pred[0][vehicle_indices]
-
-        # Map class_index with labels, and fill vehicle_counts
-        for vehicle in vehicle_results:
-            class_index = int(vehicle[-1].detach().cpu().numpy())
-            label = class_labels[class_index]
-            vehicle_counts[label] += 1
-
-        response = {
-            'data': vehicle_counts
-        }
-
-        return response, 200
+        return detectVehicleNCount(image), 200
 
 
 
