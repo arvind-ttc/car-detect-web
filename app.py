@@ -38,6 +38,14 @@ class_labels = [
 ]
 
 def detectVehicleNCount(image):
+    vehicle_counts = {
+        'bicycle': 0,
+        'car': 0,
+        'motorcycle': 0,
+        'bus': 0,
+        'truck': 0,
+    }
+
     # Perform object detection on the image
     results = model(image)
 
@@ -62,14 +70,6 @@ def detectVehicleNCount(image):
 
 class VehicleCount(Resource):
     def get(self):
-        vehicle_counts = {
-            'bicycle': 0,
-            'car': 0,
-            'motorcycle': 0,
-            'bus': 0,
-            'truck': 0,
-        }
-
         try:
             # Get the base64 encoded image from the request
             image_data = request.json['image']
